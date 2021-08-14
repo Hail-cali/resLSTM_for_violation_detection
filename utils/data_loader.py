@@ -11,7 +11,6 @@ class DataLoader(object):
         self.batch_size = batch_size
         self.mode = mode
         self.verbose = verbose
-
         self.total_frame = list()
 
         try:
@@ -21,7 +20,6 @@ class DataLoader(object):
             self.file_list = None
 
         self.data_size = len(self.file_list)
-
 
     def _video_to_frame(self, file_name):
         filepath = os.path.join(self.path, file_name)
@@ -34,15 +32,15 @@ class DataLoader(object):
             else:
                 #print(f'{cap}: {frame}')
                 break
-
         cap.release()
 
         return frames
 
-    def make_frame(self, mode='train', verbose=False):
+    def make_frame(self, mode='train', output_shape=(360, 640, 3), verbose=False):
         """
         :param verbose:
         :param mode: [str] (trian , live)
+        :param output_shape:
         :return: [list, list]
         """
         if mode == 'train':

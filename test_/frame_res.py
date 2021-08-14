@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 import torchvision.models as models
 import os
-from utils import *
+from utils.data_loader import *
 
 DPATH = '../data/fight'
 FILE = 'fi001.mp4'
@@ -29,6 +29,7 @@ while cap.isOpened():
         input_data = torch.Tensor(frame.transpose(2, 0, 1)).unsqueeze(0)
         feature = resnet_50.forward(input_data)
         features.append(feature)
+
     else:
         print(f'{cap}: {frame}')
         break
@@ -51,6 +52,5 @@ for name in file_list:
     path = os.path.join(DPATH, name)
     cap = cv2.VideoCapture(path)
     total_frame.append(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-
 
 print(total_frame)
