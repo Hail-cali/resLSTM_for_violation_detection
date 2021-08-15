@@ -1,8 +1,9 @@
 import torch
 import torch.nn as nn
 import torchvision.models as models
+from torch.nn.utils.rnn import pack_padded_sequence
 import torch.nn.functional as F
-
+import numpy as np
 
 class FeatureNet(nn.Module):
 
@@ -13,14 +14,13 @@ class FeatureNet(nn.Module):
 
         self.layer1 = self._make_pretrained_layer()
         self.layer2 = self._make_layer()
-        self.fc1 = nn.Linear(256, 128)
-        self.fc2 = nn.Linear(128, class_num)
-
+        self.fc1 = nn.Linear(80, 40)
+        self.fc2 = nn.Linear(40, class_num)
 
     def _make_layer(self):
         layers = []
         # lstm
-        lstm = nn.LSTM(input_size=200, hidden_size=256, num_layers=3)
+        lstm = nn.LSTM(input_size=200, hidden_size=80)
 
         layers.append(lstm)
         return nn.Sequential(*layers)
@@ -40,7 +40,10 @@ class FeatureNet(nn.Module):
         #f ->  x_3d_list
         hidden = None
         x = self.forward_pretrained_layer(f)
-        out, hidden = self.layer2(x, hidden)
+        #print(x.shape)
+        print(type(x[0]))
+        out, hidden = self.layer2(x)
+
         x = self.fc1(out[-1, :, :])
         x = F.relu(x)
         x = self.fc2(x)
@@ -57,7 +60,15 @@ class FeatureNet(nn.Module):
             feature = self.layer1.forward(input_data)
             feature_map.append(feature)
 
-        return feature_map
+        #return np.vstack(feature_map)
+        #return feature_map
+
+        print(f'feature map att type {type(feature_map[0])}')
+        # print(feature_map[0].shape)
+        # temp = torch.stack(feature_map)
+        # torch.Tensor(feature_map).transpose(2, 0, 1).unsqueeze(0)
+        #return pack_padded_sequence(temp, [2, 0, 1])
+        return torch.stack(feature_map)
 
     def train_pretrained_layer(self, x):
 
