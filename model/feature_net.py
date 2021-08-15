@@ -4,37 +4,60 @@ import torchvision.models as models
 
 class FeatureNet(nn.Module):
 
-    def __init__(self, D_in, H, D_out ,batch=10, pretraind_model='resnet50'):
-        self.batch_size =batch
-        self.
-        # self.X = None
-        # self.W = None
-        if pretraind_model == 'resnet50':
-            self.models = models.resnet50(pretrained=True)
-        else:
-            self.models = None
+    def __init__(self, batch=10, pretraind_model='resnet50'):
+        self.batch_size = batch
+        # self.relu = nn.ReLU(inplace=True)
+        #self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
+        self.layer1 = self._make_pretrained_layer()
+        #self.layer2 = self._make_layer()
 
 
+    def _make_layer(self):
+        layers = []
 
+        return nn.Sequential(*layers)
+
+    def _make_pretrained_layer(self):
+        layer = models.resnet50(pretrained=True)
+        layer.fc = nn.Linear(layer.fc.in_features, 200)
+
+        for param in layer.parameters():
+            param.requires_grad_(False)
+
+        return layer
+
+    def _forward_impl(self, x):
+        x = self.layer1(x)
+        x = self.layer2(x)
+
+        return x
 
     def forward(self, x):
-
-        pass
-
+        return self._forward_impl(x)
 
 
-resnet_50 = models.resnet50(pretrained=True)
-resnet_50.fc = nn.Linear(resnet_50.fc.in_features, 200)
+    def train_pretrained_layer(self, x, layer):
 
-for param in resnet_50.parameters():
-    param.requires_grad_(False)
+        total_feature_map = []
 
+        # d_size = len(x)
+        # for f_size in range(0, d_size, self.batch_size):
+        #     for frames in x[f_size:f_size + self.batch_size]:
+        #         features = list()
+        #         for frame in frames:
+        #             input_data = torch.Tensor(frame.transpose(2, 0, 1)).unsqueeze(0)
+        #             feature = layer.foward(input_data)
+        #             features.append(feature)
+        #
+        #         total_feature_map.append(features)
 
+        for frames in x:
+            features = list()
+            for frame in frames:
+                input_data = torch.Tensor(frame.transpose(2, 0, 1)).unsqueeze(0)
+                feature = layer.foward(input_data)
+                features.append(feature)
 
-# for frames in total_frame:
-#     features = []
-#     for frame in frames:
-#         input_data = torch.Tensor(frame.transpose(2, 0, 1)).unsqueeze(0)
-#         feature = resnet_50.forward(input_data)
-#         features.append(feature)
+            total_feature_map.append(features)
 
+        return total_feature_map
