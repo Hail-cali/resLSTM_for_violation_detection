@@ -5,19 +5,21 @@ import torchvision.models as models
 class FeatureNet(nn.Module):
 
     def __init__(self, batch=10, pretraind_model='resnet50'):
+        super(FeatureNet, self).__init__()
         self.batch_size = batch
         # self.relu = nn.ReLU(inplace=True)
-        #self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
+
         self.layer1 = self._make_pretrained_layer()
         #self.layer2 = self._make_layer()
 
 
     def _make_layer(self):
         layers = []
-
+        #lstm
         return nn.Sequential(*layers)
 
     def _make_pretrained_layer(self):
+
         layer = models.resnet50(pretrained=True)
         layer.fc = nn.Linear(layer.fc.in_features, 200)
 
@@ -27,7 +29,7 @@ class FeatureNet(nn.Module):
         return layer
 
     def _forward_impl(self, x):
-        x = self.layer1(x)
+        #x = self.layer1(x)
         x = self.layer2(x)
 
         return x
@@ -36,7 +38,7 @@ class FeatureNet(nn.Module):
         return self._forward_impl(x)
 
 
-    def train_pretrained_layer(self, x, layer):
+    def train_pretrained_layer(self, x):
 
         total_feature_map = []
 
@@ -51,13 +53,23 @@ class FeatureNet(nn.Module):
         #
         #         total_feature_map.append(features)
 
+
         for frames in x:
             features = list()
             for frame in frames:
                 input_data = torch.Tensor(frame.transpose(2, 0, 1)).unsqueeze(0)
-                feature = layer.foward(input_data)
+                feature = self.layer1.forward(input_data)
                 features.append(feature)
 
             total_feature_map.append(features)
 
         return total_feature_map
+
+
+    def transfrom_video(self,x):
+
+        return self.train_pretrained_layer(x)
+
+
+
+

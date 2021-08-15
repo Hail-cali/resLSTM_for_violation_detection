@@ -34,7 +34,15 @@ class DataLoader(object):
                 break
         cap.release()
 
-        return frames
+        if len(frames) > 80:
+
+            return frames[:80]
+        elif len(frames) < 80:
+            zero_padding = np.zeros_like(frames[0])
+            return frames + ([zero_padding]*(80-len(frames)))
+        else:
+            return frames
+
 
     def make_frame(self, mode='train', output_shape=(360, 640, 3), verbose=False):
         """
@@ -73,19 +81,3 @@ class DataLoader(object):
             #     frames = self._video_to_frame(filepath)
             #     self.total_frame.append(frames)
             return total_feature_frame
-
-if __name__ =='__main__':
-    DPATH = '../data/fight'
-    FILE = 'fi001.mp4'
-
-    loader = DataLoader(path=DPATH)
-    print(loader.file_list)
-    total_frame = loader.make_frame(mode='train')
-
-    print(f'''
-    {type(total_frame[1][0])}
-    {total_frame[1][0].shape}
-        ''')
-
-    print(len(total_frame))
-    print([len(frames) for frames in total_frame])
