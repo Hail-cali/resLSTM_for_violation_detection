@@ -22,5 +22,5 @@ x = model.forward(sample)
 
 print(x)
 
-
+print(model.summary)
 print()
