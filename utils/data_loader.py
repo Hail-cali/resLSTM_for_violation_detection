@@ -39,9 +39,8 @@ class DataLoader(object):
             return frames[:80]
         elif len(frames) < 80:
             zero_padding = np.zeros(frames[0].shape)
-
-            print(f'zero padding len {len([zero_padding]*(80-len(frames)))}')
-            print(f'video frames len {len(frames + ([zero_padding]*(80-len(frames))))}')
+            # print(f'zero padding len {len([zero_padding]*(80-len(frames)))}')
+            # print(f'video frames len {len(frames + ([zero_padding]*(80-len(frames))))}')
             return frames + ([zero_padding]*(80-len(frames)))
         else:
             return frames

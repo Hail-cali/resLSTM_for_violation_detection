@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torchvision.models as models
-
+import torch.nn.functional as F
 
 
 class FeatureNet(nn.Module):
@@ -38,10 +38,14 @@ class FeatureNet(nn.Module):
 
     def _forward_impl(self, f):
         #f ->  x_3d_list
+        hidden = None
         x = self.forward_pretrained_layer(f)
-        #x = self.layer2(x)
-
+        out, hidden = self.layer2(x, hidden)
+        x = self.fc1(out[-1, :, :])
+        x = F.relu(x)
+        x = self.fc2(x)
         return x
+
 
     def forward(self, x):
         return self._forward_impl(x)
