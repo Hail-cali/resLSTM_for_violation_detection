@@ -7,7 +7,7 @@ import cv2
 
 class DataLoader(object):
 
-    def __init__(self, path=None, labels=[], batch_size=10, mode='train', img_resize=False, verbose=False):
+    def __init__(self, path=None, labels=[], batch_size=64, mode='train', img_resize=False, verbose=False):
         self.path = path
         self.labels = labels
         self.batch_size = batch_size

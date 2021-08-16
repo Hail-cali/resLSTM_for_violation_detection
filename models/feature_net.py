@@ -17,11 +17,10 @@ class FeatureNet(nn.Module):
         self.fc1 = nn.Linear(80, 40)
         self.fc2 = nn.Linear(40, self.class_num)
 
+
     def _make_layer(self):
         layers = []
-        # lstm
         lstm = nn.LSTM(input_size=200, hidden_size=80)
-
         layers.append(lstm)
         return nn.Sequential(*layers)
 
@@ -33,10 +32,10 @@ class FeatureNet(nn.Module):
         for param in layer.parameters():
             param.requires_grad_(False)
 
-        # return layer
         return nn.Sequential(layer)
 
     def _forward_impl(self, f):
+
         #f ->  x_3d_list
         hidden = None
         x = self.forward_pretrained_layer(f)
@@ -58,14 +57,6 @@ class FeatureNet(nn.Module):
             feature = self.layer1.forward(input_data)
             feature_map.append(feature)
 
-        #return np.vstack(feature_map)
-        #return feature_map
-
-        #print(f'feature map att type {type(feature_map[0])}')
-        # print(feature_map[0].shape)
-        # temp = torch.stack(feature_map)
-        # torch.Tensor(feature_map).transpose(2, 0, 1).unsqueeze(0)
-        #return pack_padded_sequence(temp, [2, 0, 1])
         return torch.stack(feature_map)
 
     def train_pretrained_layer(self, x):
@@ -90,9 +81,6 @@ class ResLSTM(FeatureNet):
 
     def set_config(self):
         pass
-
-if __name__=='__main__':
-    f = FeatureNet()
 
 class Llstm(nn.Module):
 
