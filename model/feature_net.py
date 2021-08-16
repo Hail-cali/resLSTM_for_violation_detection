@@ -9,13 +9,13 @@ class FeatureNet(nn.Module):
 
     def __init__(self, batch=10, pretraind_model='resnet50', class_num=2):
         super(FeatureNet, self).__init__()
+        self.class_num = class_num
         self.batch_size = batch
-        # self.relu = nn.ReLU(inplace=True)
 
         self.layer1 = self._make_pretrained_layer()
         self.layer2 = self._make_layer()
         self.fc1 = nn.Linear(80, 40)
-        self.fc2 = nn.Linear(40, class_num)
+        self.fc2 = nn.Linear(40, self.class_num)
 
     def _make_layer(self):
         layers = []
@@ -40,14 +40,11 @@ class FeatureNet(nn.Module):
         #f ->  x_3d_list
         hidden = None
         x = self.forward_pretrained_layer(f)
-        #print(x.shape)
-        print(type(x[0]))
         out, hidden = self.layer2(x)
-
         x = self.fc1(out[-1, :, :])
-        #x = F.relu(x)
+        x = F.relu(x)
         x = self.fc2(x)
-        x = F.softmax(x)
+        x = F.softmax(x, dim=1)
         return x
 
 
@@ -64,7 +61,7 @@ class FeatureNet(nn.Module):
         #return np.vstack(feature_map)
         #return feature_map
 
-        print(f'feature map att type {type(feature_map[0])}')
+        #print(f'feature map att type {type(feature_map[0])}')
         # print(feature_map[0].shape)
         # temp = torch.stack(feature_map)
         # torch.Tensor(feature_map).transpose(2, 0, 1).unsqueeze(0)
@@ -94,6 +91,11 @@ class ResLSTM(FeatureNet):
     def set_config(self):
         pass
 
-
 if __name__=='__main__':
     f = FeatureNet()
+
+class Llstm(nn.Module):
+
+    def __init__(self):
+        super(Llstm, self).__init__()
+
