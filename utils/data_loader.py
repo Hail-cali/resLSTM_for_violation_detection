@@ -3,14 +3,17 @@ import numpy as np
 import os
 import cv2
 
+
+
 class DataLoader(object):
 
-    def __init__(self, path=None, labels=[], batch_size=10, mode='train', verbose=False):
+    def __init__(self, path=None, labels=[], batch_size=10, mode='train', img_resize=False, verbose=False):
         self.path = path
         self.labels = labels
         self.batch_size = batch_size
         self.mode = mode
         self.verbose = verbose
+        self.img_resize = img_resize
         self.total_frame = list()
 
         try:
@@ -28,6 +31,9 @@ class DataLoader(object):
         while cap.isOpened():
             ret, frame = cap.read()
             if ret:
+                if self.img_resize:
+
+                    frame = cv2.resize(frame)
                 frames.append(frame)
             else:
                 #print(f'{cap}: {frame}')
@@ -53,6 +59,7 @@ class DataLoader(object):
         :param output_shape:
         :return: [list, list]
         """
+        print(f"{'='*10} {'start transform':^2} {'='*10} ")
         if mode == 'train':
 
             total_frame = [self._video_to_frame(name) for name in self.file_list]
@@ -62,7 +69,7 @@ class DataLoader(object):
             # for name in self.file_list[:2]:
             #     frames = self._video_to_frame(name)
             #     total_frame.append(frames)
-
+            print(f'video to frame done || total {len(total_frame)}  shape {total_frame[0][0].shape}')
             return total_frame
 
         else:
