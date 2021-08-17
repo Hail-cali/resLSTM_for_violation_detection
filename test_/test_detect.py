@@ -7,13 +7,18 @@ import torch.optim as optim
 from torchsummary import summary
 import tensorboardX
 from opts import parse_opts
-DPATH = '../data/fight'
+from torch.utils import data
+
+
+DPATH = '../data'
 
 
 
 loader = DataLoader(path=DPATH)
-print(loader.file_list)
-total_frame = loader.make_frame(mode='train')
+X, y = loader.make_frame(mode='train')
+
+X_train, X_test, y_train, y_test = loader.split_train_test_data(X,y, test_size=0.1)
+# print(len(X_test))
 
 #print(f'total_frame len: {len(total_frame)}')
 #print([len(frames) for frames in total_frame])
@@ -39,7 +44,7 @@ optimizer = optim.Adam(model.parameters(), lr=0.001)
 
 
 # sample settings
-sample = total_frame[10]
+sample = X[10]
 #x = model.forward(sample)
 #print(x)
 
