@@ -18,6 +18,7 @@ loader = DataLoader(path=DPATH)
 X, y = loader.make_frame(mode='train')
 
 X_train, X_test, y_train, y_test = loader.split_train_test_data(X,y, test_size=0.1)
+
 # print(len(X_test))
 
 #print(f'total_frame len: {len(total_frame)}')

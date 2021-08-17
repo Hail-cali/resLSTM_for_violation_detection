@@ -4,6 +4,7 @@ import os
 import cv2
 from collections import OrderedDict
 from itertools import chain
+import torch
 
 class DataLoader(object):
 
@@ -44,6 +45,8 @@ class DataLoader(object):
 
         return train_test_split(X, y, test_size=test_size)
 
+
+
     def _video_to_frame(self, file_name):
         filepath = os.path.join(self.path, file_name)
         cap = cv2.VideoCapture(filepath)
@@ -72,12 +75,40 @@ class DataLoader(object):
             return frames
 
 
+    def __video_to_frame(self, file_name, model=None):
+        filepath = os.path.join(self.path, file_name)
+        cap = cv2.VideoCapture(filepath)
+
+        frames = []
+        while (cap.isOpened()):
+            ret, frame = cap.read()
+            if ret:
+                input_data = torch.Tensor(frame.transpose(2, 0, 1)).unsqueeze(0)
+                feature = model.forward(input_data)
+                frames.append(feature.detach().numpy())
+            else:
+                break
+
+        cap.release()
+
+        # frames = torch.stack(frames)
+        frames = torch.Tensor(frames).squeeze(1)
+        if len(frames) < 80:
+            padding = torch.Tensor(np.repeat(np.expand_dims(np.zeros((200)), 0), 80 - len(frames), axis=0))
+            frames = torch.vstack((frames, padding))
+        elif len(frames) > 80:
+            frames = frames[:80]
+
+
+        return frames
+
+
     def make_frame(self, mode='train', output_shape=(360, 640, 3), verbose=False):
         """
         :param verbose:
         :param mode: [str] (trian , live)
         :param output_shape:
-        :return: [list, list]
+        :return: X: [list, nd_array] : y: [list, int]
         """
         print(f"{'='*10} {'start transform':^2} {'='*10} ")
         if mode == 'train':
@@ -87,32 +118,50 @@ class DataLoader(object):
 
             X = list(chain.from_iterable(total_frame))
             y = list(chain.from_iterable(labels))
+            # X = torch.Tensor(list(chain.from_iterable(total_frame)))
+            # y = torch.Tensor(list(chain.from_iterable(labels)))
 
-            # 이런식으로 작동하는거 cash로 돌렸는데 batch size 설정안하면 데이터 크기에 따라 메모리 부족날 수도
-            # total_frame = []
-            # for name in self.file_list[:2]:
-            #     frames = self._video_to_frame(name)
-            #     total_frame.append(frames)
-            # print(f'video to frame done || total {len(total_frame)}  shape {total_frame[0][0].shape}')
-            print(f'video to frame done || total {len(X)}  shape {X[0][0].shape}')
+            print(f'video to frame done || total {len(X)}')
             print(f"{'='*10} {'end transform':^2} {'='*10}")
-            return X, y
+            # return X, y
+            return [(xx, yy) for xx, yy in zip(X, y)]
+
+        elif mode == 'extract':
+            import torchvision.models as models
+            import torch.nn as nn
+            resnet_50 = models.resnet50(pretrained=True)
+            resnet_50.fc = nn.Linear(resnet_50.fc.in_features, 200)
+            for param in resnet_50.parameters():
+                param.requires_grad_(False)
+
+            total_frame = [[self.__video_to_frame(name, model=resnet_50) for name in fl] for fl in self.file_list]
+
+            labels = [len(fl) * [l] for fl, l in zip(total_frame, self.labels)]
+
+            # X = list(chain.from_iterable(total_frame))
+            # y = list(chain.from_iterable(labels))
+
+            # X = torch.Tensor(list(chain.from_iterable(total_frame)))
+            # y = torch.Tensor(list(chain.from_iterable(labels)))
+
+            X = torch.cat(list(chain.from_iterable(total_frame))).reshape(-1, 80, 200)
+            y = torch.vstack(list(chain.from_iterable(labels)))
+            print(f"{'=' * 10} {'end transform':^2} {'=' * 10}")
+            return [(xx, yy) for xx, yy in zip(X, y)]
 
         else:
             """
             not working yet temp!
             """
-
             # live fit
-            model = 'some model'  # temp
-            total_feature_frame = []
-            for batch in range(0, self.data_size, self.batch_size):
-                batch_frame = [self._video_to_frame(name) for name in self.file_list[:batch]]
-                features = model.fit(batch_frame)
-                total_feature_frame.append(features)
-            # for name in self.file_list[:2]:
-            #     filepath = os.path.join(self.path, name)
-            #     #models.method => feature map
-            #     frames = self._video_to_frame(filepath)
-            #     self.total_frame.append(frames)
-            return total_feature_frame
+            print(f'not implemented')
+            return None
+
+    def video_loader(self):
+        """
+        :return: generator
+        """
+        X, y = self.make_frame(mode='train')
+
+        for gen in zip(X, y):
+            yield gen

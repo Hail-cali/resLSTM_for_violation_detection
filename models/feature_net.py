@@ -46,7 +46,6 @@ class FeatureNet(nn.Module):
         x = F.softmax(x, dim=1)
         return x
 
-
     def forward(self, x):
         return self._forward_impl(x)
 
@@ -59,23 +58,7 @@ class FeatureNet(nn.Module):
 
         return torch.stack(feature_map)
 
-    def train_pretrained_layer(self, x):
 
-        total_feature_map = []
-
-        for frames in x:
-            features = list()
-            for frame in frames:
-                input_data = torch.Tensor(frame.transpose(2, 0, 1)).unsqueeze(0)
-                feature = self.layer1.forward(input_data)
-                features.append(feature)
-
-            total_feature_map.append(features)
-
-        return total_feature_map
-
-    def transfrom_video(self, x):
-        return self.train_pretrained_layer(x)
 
 class ResLSTM(FeatureNet):
 
