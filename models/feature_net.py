@@ -58,15 +58,25 @@ class FeatureNet(nn.Module):
 
         return torch.stack(feature_map)
 
-
-
 class ResLSTM(FeatureNet):
 
     def set_config(self):
         pass
 
-class Llstm(nn.Module):
-
+class lLSTM(nn.Module):
+    """
+    #
+    """
     def __init__(self):
-        super(Llstm, self).__init__()
+        super(lLSTM, self).__init__()
+        self.lstm = nn.LSTM(input_size=200,
+                            hidden_size=80,
+                            bidirectional=True,
+                            batch_first=True)
+        self.fc = nn.Linear(160, 1)
+
+    def forward(self, X):
+        outputs, _ = self.lstm(X)
+        outputs = outputs[:, -1, :]
+        return self.fc(outputs)
 
