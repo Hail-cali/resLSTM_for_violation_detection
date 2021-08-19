@@ -5,6 +5,8 @@ from torch.nn.utils.rnn import pack_padded_sequence
 import torch.nn.functional as F
 import numpy as np
 
+torch.no_grad()
+
 class FeatureNet(nn.Module):
 
     def __init__(self, batch=10, pretraind_model='resnet50', class_num=2):

@@ -30,11 +30,12 @@ def resume_model(opt, model, optimizer):
 def main():
 	DPATH = '../dataset'
 	opt = parse_opts()
-	device = torch.device(f"cuda:{opt.gpu}" if opt.use_cuda else "cpu")
+	# device = torch.device(f"cuda:{opt.gpu}" if opt.use_cuda else "cpu")
+	device = 'cuda'
 	print(device, 'use')
 	# use loader
-	loader = DataLoader(path=DPATH, test_mode=True)
-
+	# loader = DataLoader(path=DPATH, test_mode=True)
+	loader = DataLoader(path=DPATH)
 	# data set
 	X, y = loader.make_frame(mode='extract', device=device)
 	total_data = myDataset(x=X, y=y)
@@ -86,7 +87,7 @@ def main():
 
 				state = {'epoch': epoch, 'state_dict': model.state_dict(),
 						 'optimizer_state_dict': optimizer.state_dict()}
-				torch.save(state, os.path.join('snapshots', f'{opt.model}-Epoch-{epoch}-Loss-{val_loss}.pth'))
+				torch.save(state, os.path.join('../snapshots', f'{opt.model}-Epoch-{epoch}-Loss-{val_loss}.pth'))
 				print("Epoch {} model saved!\n".format(epoch))
 
 if __name__ == "__main__":

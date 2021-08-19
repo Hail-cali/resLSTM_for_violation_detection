@@ -41,8 +41,8 @@ def main():
                                    [int(len(total_data) * 0.8), len(total_data) - int(len(total_data) * 0.8)])
 
     print(type(train))
-    train_loader = data.DataLoader(train, batch_size=1, shuffle=True)
-    val_loader = data.DataLoader(val, batch_size=1, shuffle=True)
+    train_loader = data.DataLoader(train, batch_size=10, shuffle=True)
+    val_loader = data.DataLoader(val, batch_size=10, shuffle=True)
 
     # set model
     model = FeatureNet()

@@ -110,8 +110,9 @@ class DataLoader(object):
         while (cap.isOpened()):
             ret, frame = cap.read()
             if ret:
-                input_data = torch.Tensor(frame.transpose(2, 0, 1)).unsqueeze(0)
+                input_data = torch.Tensor(frame.transpose(2, 0, 1)).unsqueeze(0).to('cuda')
                 feature = model.forward(input_data)
+                feature = feature.to('cpu')
                 frames.append(feature.detach().numpy())
             else:
                 break
