@@ -40,8 +40,8 @@ def main():
     train, val = data.random_split(total_data,
                                    [int(len(total_data) * 0.8), len(total_data) - int(len(total_data) * 0.8)])
 
-    train_loader = data.DataLoader(train, batch_size=1, shuffle=True)
-    val_loader = data.DataLoader(val, batch_size=1, shuffle=True)
+    train_loader = data.DataLoader(train, batch_size=2, shuffle=True)
+    val_loader = data.DataLoader(val, batch_size=2, shuffle=True)
 
     # set model
     model = FeatureNet()

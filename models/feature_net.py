@@ -45,8 +45,8 @@ class FeatureNet(nn.Module):
         print(f'x shpae: {x.shape}')
         out, hidden = self.layer2(x)
         print(f'in out shape: {out.shape}')
-        x = self.fc1(out[:, -1, :])
         #print(f'in out shape: {x.shape}')
+        x = self.fc1(out[:, -1, :])
         # x
         # shape: torch.Size([1, 80, 200])
         # out
@@ -80,12 +80,12 @@ class ResLSTM(nn.Module):
 
         self.class_num = class_num
         self.layer2 = self._make_layer()
-        self.fc1 = nn.Linear(100, 40)
-        self.fc2 = nn.Linear(40, self.class_num)
+        self.fc1 = nn.Linear(80, 40)
+        self.fc2 = nn.Linear(20, self.class_num)
 
     def _make_layer(self):
         layers = []
-        lstm = nn.LSTM(input_size=200, hidden_size=100,
+        lstm = nn.LSTM(input_size=200, hidden_size=80,
                        batch_first=True)
         layers.append(lstm)
         return nn.Sequential(*layers)
@@ -93,9 +93,9 @@ class ResLSTM(nn.Module):
     def _forward_impl(self, x):
 
         hidden = None
-        print(f'x shape : {x.shape}')
+        #print(f'x shape : {x.shape}')
         out, hidden = self.layer2(x)
-        print(f'out shape : {out.shape}')
+        #print(f'out shape : {out.shape}')
         x = self.fc1(out[:, -1, :])
         x = F.relu(x)
         x = self.fc2(x)

@@ -43,14 +43,14 @@ def main():
 	# loader = DataLoader(path=DPATH, test_mode=True)
 
 	# data set
-	X, y = loader.make_frame(mode='extract', device=device)
+	X, y = loader.make_frame(mode='extract',fc_layers=200, device=device)
 	total_data = myDataset(x=X, y=y)
 	train, val = data.random_split(total_data,
 								   [int(len(total_data) * 0.8), len(total_data) - int(len(total_data) * 0.8)])
 
 	print(type(train))
-	train_loader = data.DataLoader(train, batch_size=10, shuffle=True)
-	val_loader = data.DataLoader(val, batch_size=10, shuffle=True)
+	train_loader = data.DataLoader(train, batch_size=20, shuffle=True)
+	val_loader = data.DataLoader(val, batch_size=20, shuffle=True)
 
 	# set model
 	model = ResLSTM()

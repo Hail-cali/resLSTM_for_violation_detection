@@ -53,7 +53,7 @@ class DataLoader(object):
             try:
                 self.file_dir = [os.path.join(self.path, label) for label in os.listdir(self.path)]
 
-                self.file_list = [[os.path.join(f, file) for file in os.listdir(f)][:2] for f in self.file_dir]
+                self.file_list = [[os.path.join(f, file) for file in os.listdir(f)][:4] for f in self.file_dir]
                 print(f'file size: ||{tuple(len(file) for file in self.file_list)} || \nex_path: {self.file_list[0][0]}')
             except FileNotFoundError:
                 print(f'[Errno 2] No such file or directory: {self.path}')
@@ -79,7 +79,7 @@ class DataLoader(object):
             ret, frame = cap.read()
             if ret:
                 if self.img_resize:
-                    frame = cv2.resize(frame, dsize=(640, 480), interpolation=cv2.INTER_AREA)
+                    frame = cv2.resize(frame, dsize=(640, 360), interpolation=cv2.INTER_AREA)
                 frames.append(frame)
             else:
                 #print(f'{cap}: {frame}')
@@ -97,7 +97,7 @@ class DataLoader(object):
 
 
 
-    def __video_to_frame(self, file_name, model=None):
+    def __video_to_frame(self, file_name, fc_layers=200 ,model=None):
         """
         :param file_name: filepath + filename
         :param model: pretrained model class which fine tuned
@@ -123,7 +123,7 @@ class DataLoader(object):
 
         frames = torch.Tensor(frames).squeeze(1)
         if len(frames) < 80:
-            padding = torch.Tensor(np.repeat(np.expand_dims(np.zeros((200)), 0), 80 - len(frames), axis=0))
+            padding = torch.Tensor(np.repeat(np.expand_dims(np.zeros((fc_layers)), 0), 80 - len(frames), axis=0))
             frames = torch.vstack((frames, padding))
         elif len(frames) >= 80:
             frames = frames[:80]
@@ -134,7 +134,7 @@ class DataLoader(object):
         return frames
 
 
-    def make_frame(self, mode='train', output_shape=(360, 640, 3), device=False,verbose=False):
+    def make_frame(self, mode='train', fc_layers=200, device=False,verbose=False):
         """
         :param verbose:
         :param mode: [str] (trian , live)
@@ -168,7 +168,7 @@ class DataLoader(object):
             if device:
                 print(device, 'use')
             resnet_50 = models.resnet50(pretrained=True)
-            resnet_50.fc = nn.Linear(resnet_50.fc.in_features, 200)
+            resnet_50.fc = nn.Linear(resnet_50.fc.in_features, fc_layers)
             resnet_50.to(device)
             # resnet_50.eval()
             for param in resnet_50.parameters():
@@ -176,7 +176,7 @@ class DataLoader(object):
 
             total_frame = []
             for class_file in self.file_list:
-                total_frame.append([self.__video_to_frame(name, model=resnet_50) for name in class_file])
+                total_frame.append([self.__video_to_frame(name, fc_layers ,model=resnet_50) for name in class_file])
 
             # labels = [len(fl) * [l] for fl, l in zip(total_frame, self.labels)]
             labels = [[[l]for _ in fl] for fl, l in zip(total_frame, self.labels)]
