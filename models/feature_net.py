@@ -60,18 +60,34 @@ class FeatureNet(nn.Module):
 
 class ResLSTM(nn.Module):
 
-    def __init__(self):
+    def __init__(self, class_num=2):
         super(ResLSTM, self).__init__()
-        self.lstm = nn.LSTM(input_size=200,
-                            hidden_size=80,
-                            bidirectional=True,
-                            batch_first=True)
-        self.fc = nn.Linear(160, 1)
+
+        self.class_num = class_num
+        self.layer2 = self._make_layer()
+        self.fc1 = nn.Linear(80, 40)
+        self.fc2 = nn.Linear(40, self.class_num)
+
+    def _make_layer(self):
+        layers = []
+        lstm = nn.LSTM(input_size=200, hidden_size=80,
+                       bidirectional=True, batch_first=True)
+        layers.append(lstm)
+        return nn.Sequential(*layers)
+
+    def _forward_impl(self, x):
+
+        hidden = None
+        out, hidden = self.layer2(x)
+        x = self.fc1(out[-1:, :, :])
+        x = F.relu(x)
+        x = self.fc2(x)
+        x = F.softmax(x, dim=1)
+        return x
 
     def forward(self, X):
-        outputs, _ = self.lstm(X)
-        outputs = outputs[:, -1, :]
-        return self.fc(outputs)
+        return self._forward_impl(X)
+
 
 class lLSTM(nn.Module):
     """
