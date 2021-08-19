@@ -30,24 +30,23 @@ def resume_model(opt, model, optimizer):
 def main():
 	DPATH = '../dataset'
 	opt = parse_opts()
-
+	device = torch.device(f"cuda:{opt.gpu}" if opt.use_cuda else "cpu")
+	print(device, 'use')
 	# use loader
 	loader = DataLoader(path=DPATH, test_mode=True)
 
 	# data set
-	X, y = loader.make_frame(mode='extract')
+	X, y = loader.make_frame(mode='extract', device=device)
 	total_data = myDataset(x=X, y=y)
 	train, val = data.random_split(total_data,
 								   [int(len(total_data) * 0.8), len(total_data) - int(len(total_data) * 0.8)])
 
 	print(type(train))
-	train_loader = data.DataLoader(train, batch_size=1, shuffle=True)
-	val_loader = data.DataLoader(val, batch_size=1, shuffle=True)
+	train_loader = data.DataLoader(train, batch_size=2, shuffle=True)
+	val_loader = data.DataLoader(val, batch_size=2, shuffle=True)
 
 	# set model
 	model = ResLSTM()
-	device = torch.device(f"cuda:{opt.gpu}" if opt.use_cuda else "cpu")
-	print(device, 'use')
 	model.to(device)
 
 	# USE_CUDA = torch.cuda.is_available()
@@ -57,9 +56,8 @@ def main():
 	summary_writer = tensorboardX.SummaryWriter(log_dir='../tf_logs')
 
 	# optimizer
-	criterion = nn.CrossEntropyLoss(reduction='sum')
+	criterion = nn.CrossEntropyLoss()
 	# criterion = nn.BCEWithLogitsLoss()
-	# optimizer = optim.SGD(model.parameters(), lr=0.1)
 	optimizer = optim.Adam(model.parameters(), lr=0.001)
 
 	if opt.resume_path:

@@ -40,7 +40,9 @@ class FeatureNet(nn.Module):
         hidden = None
         x = self.forward_pretrained_layer(f)
         out, hidden = self.layer2(x)
+        print(f'in out shape: {out.shape}')
         x = self.fc1(out[-1, :, :])
+        print(f'in out shape: {x.shape}')
         x = F.relu(x)
         x = self.fc2(x)
         x = F.softmax(x, dim=1)
@@ -71,7 +73,7 @@ class ResLSTM(nn.Module):
     def _make_layer(self):
         layers = []
         lstm = nn.LSTM(input_size=200, hidden_size=80,
-                       bidirectional=True, batch_first=True)
+                       batch_first=True)
         layers.append(lstm)
         return nn.Sequential(*layers)
 
@@ -79,7 +81,7 @@ class ResLSTM(nn.Module):
 
         hidden = None
         out, hidden = self.layer2(x)
-        x = self.fc1(out)
+        x = self.fc1(out[:, -1, :])
         x = F.relu(x)
         x = self.fc2(x)
         x = F.softmax(x, dim=1)

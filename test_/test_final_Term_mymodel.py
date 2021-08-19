@@ -54,24 +54,24 @@ def main():
     # DEVICE = torch.device("cuda" if USE_CUDA else "cpu")
 
     # tensorboard
-    # summary_writer = tensorboardX.SummaryWriter(log_dir='../tf_logs')
-    #
-    # # optimizer
-    # criterion = nn.CrossEntropyLoss(reduction='sum')
-    # # criterion = nn.BCEWithLogitsLoss()
-    # # optimizer = optim.SGD(model.parameters(), lr=0.1)
-    # optimizer = optim.Adam(model.parameters(), lr=0.001)
-    #
-    # if opt.resume_path:
-    #     start_epoch = resume_model(opt, model, optimizer)
-    # else:
-    #     start_epoch = 1
+    summary_writer = tensorboardX.SummaryWriter(log_dir='../tf_logs')
+
+    # optimizer
+    criterion = nn.CrossEntropyLoss(reduction='sum')
+    # criterion = nn.BCEWithLogitsLoss()
+    optimizer = optim.Adam(model.parameters(), lr=0.001)
+
+    if opt.resume_path:
+        start_epoch = resume_model(opt, model, optimizer)
+    else:
+        start_epoch = 1
+
     # # start training
-    # for epoch in range(start_epoch, opt.n_epochs + 1):
-    #         train_loss, train_acc = train_epoch(
-    #             model, train_loader, criterion, optimizer, epoch, opt.log_interval, device)
-    #         val_loss, val_acc = val_epoch(
-    #             model, val_loader, criterion, device)
+    for epoch in range(start_epoch, opt.n_epochs + 1):
+            train_loss, train_acc = train_epoch(
+                model, train_loader, criterion, optimizer, epoch, opt.log_interval, device)
+            val_loss, val_acc = val_epoch(
+                model, val_loader, criterion, device)
     #
     #         # saving weights to checkpoint
     #         if (epoch) % opt.save_interval == 0:

@@ -7,7 +7,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torchvision import transforms
 import argparse
-import tensorboardX
+# import tensorboardX
 import os
 import random
 import numpy as np
@@ -22,8 +22,10 @@ def train_epoch(model, data_loader, criterion, optimizer, epoch, log_interval, d
     accuracies = AverageMeter()
     for batch_idx, (data, targets) in enumerate(data_loader):
         data, targets = data.to(device), targets.to(device)
+        #print(f'data_loader data: {type(data)}')
         outputs = model(data)
-
+        # outputs = model.forward(data)
+        #print(f'train seesion output : {outputs.shape}')
         loss = criterion(outputs, targets)
         acc = calculate_accuracy(outputs, targets)
 

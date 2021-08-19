@@ -53,7 +53,7 @@ class DataLoader(object):
             try:
                 self.file_dir = [os.path.join(self.path, label) for label in os.listdir(self.path)]
 
-                self.file_list = [[os.path.join(f, file) for file in os.listdir(f)][:1] for f in self.file_dir]
+                self.file_list = [[os.path.join(f, file) for file in os.listdir(f)][:2] for f in self.file_dir]
                 print(f'file size: {tuple(len(file) for file in self.file_list)} ex) {self.file_list[0][0]}')
             except FileNotFoundError:
                 print(f'[Errno 2] No such file or directory: {self.path}')
@@ -79,7 +79,7 @@ class DataLoader(object):
             ret, frame = cap.read()
             if ret:
                 if self.img_resize:
-                    frame = cv2.resize(frame)
+                    frame = cv2.resize(frame, dsize=(640, 480), interpolation=cv2.INTER_AREA)
                 frames.append(frame)
             else:
                 #print(f'{cap}: {frame}')
@@ -93,7 +93,7 @@ class DataLoader(object):
 
         elif frames.shpae[0] < 80:
             zero_padding = torch.Tensor([np.zeros(frames[0].shape)]*(80-frames.shape[0]))
-            return torch.vstack([frames,zero_padding])
+            return torch.vstack([frames, zero_padding])
 
 
 
@@ -132,7 +132,7 @@ class DataLoader(object):
         return frames
 
 
-    def make_frame(self, mode='train', output_shape=(360, 640, 3), verbose=False):
+    def make_frame(self, mode='train', output_shape=(360, 640, 3), device=False,verbose=False):
         """
         :param verbose:
         :param mode: [str] (trian , live)
@@ -148,8 +148,9 @@ class DataLoader(object):
 
             labels = [[[l] for _ in fl] for fl, l in zip(total_frame, self.labels)]
 
-            X = torch.vstack(list(chain.from_iterable(total_frame)))
-            y = torch.Tensor(labels).squeeze(1)
+            X = torch.stack(list(chain.from_iterable(total_frame)))
+            y = torch.Tensor(list(chain.from_iterable(labels)))
+
 
             print(f'video to frame done || total {X.shape}')
             print(f'video to frame done || total {y.shape}')
@@ -159,9 +160,12 @@ class DataLoader(object):
         elif mode == 'extract':
             import torchvision.models as models
             import torch.nn as nn
-
+            if device:
+                print(device, 'use')
             resnet_50 = models.resnet50(pretrained=True)
             resnet_50.fc = nn.Linear(resnet_50.fc.in_features, 200)
+            resnet_50.to(device)
+            resnet_50.eval()
             for param in resnet_50.parameters():
                 param.requires_grad_(False)
 
@@ -174,7 +178,8 @@ class DataLoader(object):
 
             X = torch.stack(list(chain.from_iterable(total_frame)))
             print(f'torch X {X.shape}')
-            y = torch.Tensor(labels).squeeze(1)
+            # y = torch.Tensor(list(chain.from_iterable(labels)))
+            y = torch.Tensor(list(chain.from_iterable(labels))).squeeze().long()
             print(f'torch y {y.shape}')
 
             print(f"{'=' * 10} {'end transform':^2} {'=' * 10}")
@@ -196,3 +201,5 @@ class DataLoader(object):
 
         for gen in zip(X, y):
             yield gen
+
+

@@ -4,7 +4,7 @@ from utils.data_loader import *
 from models.feature_net import *
 import torch.nn as nn
 import torch.optim as optim
-from torchsummary import summary
+
 import tensorboardX
 from opts import parse_opts
 from torch.utils import data
