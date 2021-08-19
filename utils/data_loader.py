@@ -70,7 +70,7 @@ class DataLoader(object):
         """
 
         :param file_name: file path + file name
-        :return: frame for single video :type: [list,nd array]
+        :return: frame for single video :type: [torch.Tensor] :shape: [80, 360, 640, 3]
         """
         filepath = os.path.join(self.path, file_name)
         cap = cv2.VideoCapture(filepath)
@@ -85,18 +85,16 @@ class DataLoader(object):
                 #print(f'{cap}: {frame}')
                 break
         cap.release()
+        frames = torch.Tensor(frames).squeeze(1)
 
-        if len(frames) > 80:
+        # return frames
+        if frames.shpae[0] >= 80:
             return frames[:80]
 
-        elif len(frames) < 80:
-            zero_padding = np.zeros(frames[0].shape)
-            # print(f'zero padding len {len([zero_padding]*(80-len(frames)))}')
-            # print(f'video frames len {len(frames + ([zero_padding]*(80-len(frames))))}')
-            return frames + ([zero_padding]*(80-len(frames)))
+        elif frames.shpae[0] < 80:
+            zero_padding = torch.Tensor([np.zeros(frames[0].shape)]*(80-frames.shape[0]))
+            return torch.vstack([frames,zero_padding])
 
-        else:
-            return frames
 
 
     def __video_to_frame(self, file_name, model=None):
@@ -143,42 +141,43 @@ class DataLoader(object):
         """
         print(f"{'='*10} {'start transform':^2} {'='*10} ")
         print(f" mode= {mode} ")
+
         if mode == 'train':
 
             total_frame = [[self._video_to_frame(name) for name in fl] for fl in self.file_list]
-            labels = [len(fl)*[l] for fl, l in zip(total_frame, self.labels)]
 
-            X = list(chain.from_iterable(total_frame))
-            y = list(chain.from_iterable(labels))
-            # X = torch.Tensor(list(chain.from_iterable(total_frame)))
-            # y = torch.Tensor(list(chain.from_iterable(labels)))
+            labels = [[[l] for _ in fl] for fl, l in zip(total_frame, self.labels)]
 
-            print(f'video to frame done || total {len(X)}')
+            X = torch.vstack(list(chain.from_iterable(total_frame)))
+            y = torch.Tensor(labels).squeeze(1)
+
+            print(f'video to frame done || total {X.shape}')
+            print(f'video to frame done || total {y.shape}')
             print(f"{'='*10} {'end transform':^2} {'='*10}")
-            # return X, y
-            return [(xx, yy) for xx, yy in zip(X, y)]
+            return X, y
 
         elif mode == 'extract':
             import torchvision.models as models
             import torch.nn as nn
+
             resnet_50 = models.resnet50(pretrained=True)
             resnet_50.fc = nn.Linear(resnet_50.fc.in_features, 200)
             for param in resnet_50.parameters():
                 param.requires_grad_(False)
+
             total_frame = []
             for class_file in self.file_list:
                 total_frame.append([self.__video_to_frame(name, model=resnet_50) for name in class_file])
 
-            labels = [len(fl) * [l] for fl, l in zip(total_frame, self.labels)]
-
+            # labels = [len(fl) * [l] for fl, l in zip(total_frame, self.labels)]
+            labels = [[[l]for _ in fl] for fl, l in zip(total_frame, self.labels)]
 
             X = torch.stack(list(chain.from_iterable(total_frame)))
             print(f'torch X {X.shape}')
-            y = torch.Tensor(list(chain.from_iterable(labels)))
+            y = torch.Tensor(labels).squeeze(1)
             print(f'torch y {y.shape}')
 
             print(f"{'=' * 10} {'end transform':^2} {'=' * 10}")
-            #return [(xx, yy) for xx, yy in zip(X, y)]
             return X, y
 
         else:

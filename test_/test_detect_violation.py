@@ -9,7 +9,7 @@ import tensorboardX
 from opts import parse_opts
 from torch.utils import data
 
-DPATH = '../data'
+DPATH = '../dataset'
 
 # test mode loader
 loader = DataLoader(path=DPATH, test_mode=True)
@@ -21,7 +21,8 @@ X, y = loader.make_frame(mode='extract')
 
 total_data = myDataset(x=X, y=y)
 
-train, val = data.random_split(total_data, [int(len(total_data)*0.8), len(total_data) - int(len(total_data)*0.8)])
+val_size = 0.5
+train, val = data.random_split(total_data, [int(len(total_data)*val_size), len(total_data) - int(len(total_data)*val_size)])
 
 
 train_loader = data.DataLoader(train, batch_size=1, shuffle=True)
@@ -47,7 +48,6 @@ def train(model, optimizer, train_iter):
         loss = criterion(logit, y)
         loss.backward()
         optimizer.step()
-
 
 def evaluate(model, val_iter):
     model.eval()
