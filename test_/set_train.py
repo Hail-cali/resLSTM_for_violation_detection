@@ -22,10 +22,7 @@ def train_epoch(model, data_loader, criterion, optimizer, epoch, log_interval, d
     accuracies = AverageMeter()
     for batch_idx, (data, targets) in enumerate(data_loader):
         data, targets = data.to(device), targets.to(device)
-        #print(f'data_loader data: {type(data)}')
         outputs = model(data)
-        # outputs = model.forward(data)
-        #print(f'train seesion output : {outputs.shape}')
         loss = criterion(outputs, targets)
         acc = calculate_accuracy(outputs, targets)
 

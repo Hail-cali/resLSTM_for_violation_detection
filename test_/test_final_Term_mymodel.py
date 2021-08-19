@@ -30,7 +30,7 @@ def resume_model(opt, model, optimizer):
 def main():
     DPATH = '../dataset'
     opt = parse_opts()
-
+    opt.model ='featurenet'
     # use loader
     loader = DataLoader(path=DPATH, test_mode=True)
 
@@ -40,13 +40,14 @@ def main():
     train, val = data.random_split(total_data,
                                    [int(len(total_data) * 0.8), len(total_data) - int(len(total_data) * 0.8)])
 
-    print(type(train))
-    train_loader = data.DataLoader(train, batch_size=10, shuffle=True)
-    val_loader = data.DataLoader(val, batch_size=10, shuffle=True)
+    train_loader = data.DataLoader(train, batch_size=1, shuffle=True)
+    val_loader = data.DataLoader(val, batch_size=1, shuffle=True)
 
     # set model
     model = FeatureNet()
     device = torch.device(f"cuda:{opt.gpu}" if opt.use_cuda else "cpu")
+
+    #device ='cuda'
     print(device, 'use')
     model.to(device)
 
@@ -54,7 +55,7 @@ def main():
     # DEVICE = torch.device("cuda" if USE_CUDA else "cpu")
 
     # tensorboard
-    summary_writer = tensorboardX.SummaryWriter(log_dir='../tf_logs')
+    #summary_writer = tensorboardX.SummaryWriter(log_dir='../tf_logs')
 
     # optimizer
     criterion = nn.CrossEntropyLoss(reduction='sum')
@@ -73,23 +74,23 @@ def main():
             val_loss, val_acc = val_epoch(
                 model, val_loader, criterion, device)
     #
-    #         # saving weights to checkpoint
-    #         if (epoch) % opt.save_interval == 0:
-    #             # scheduler.step(val_loss)
-    #             # write summary
-    #             summary_writer.add_scalar(
-    #                 'losses/train_loss', train_loss, global_step=epoch)
-    #             summary_writer.add_scalar(
-    #                 'losses/val_loss', val_loss, global_step=epoch)
-    #             summary_writer.add_scalar(
-    #                 'acc/train_acc', train_acc * 100, global_step=epoch)
-    #             summary_writer.add_scalar(
-    #                 'acc/val_acc', val_acc * 100, global_step=epoch)
-    #
-    #             state = {'epoch': epoch, 'state_dict': model.state_dict(),
-    #                      'optimizer_state_dict': optimizer.state_dict()}
-    #             torch.save(state, os.path.join('snapshots', f'{opt.model}-Epoch-{epoch}-Loss-{val_loss}.pth'))
-    #             print("Epoch {} model saved!\n".format(epoch))
+            # saving weights to checkpoint
+            if (epoch) % opt.save_interval == 0:
+                # scheduler.step(val_loss)
+                # write summary
+                # summary_writer.add_scalar(
+                #     'losses/train_loss', train_loss, global_step=epoch)
+                # summary_writer.add_scalar(
+                #     'losses/val_loss', val_loss, global_step=epoch)
+                # summary_writer.add_scalar(
+                #     'acc/train_acc', train_acc * 100, global_step=epoch)
+                # summary_writer.add_scalar(
+                #     'acc/val_acc', val_acc * 100, global_step=epoch)
+
+                state = {'epoch': epoch, 'state_dict': model.state_dict(),
+                         'optimizer_state_dict': optimizer.state_dict()}
+                #torch.save(state, os.path.join('../snapshots', f'{opt.model}-Epoch-{epoch}-Loss-{val_loss}.pth'))
+                print("Epoch {} model saved!\n".format(epoch))
 
 if __name__ == "__main__":
     main()

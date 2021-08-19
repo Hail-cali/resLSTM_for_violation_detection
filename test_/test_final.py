@@ -28,14 +28,20 @@ def resume_model(opt, model, optimizer):
 
 
 def main():
-	DPATH = '../dataset'
+	#DPATH = '../dataset'
+	DPATH = '../data'
 	opt = parse_opts()
 	# device = torch.device(f"cuda:{opt.gpu}" if opt.use_cuda else "cpu")
 	device = 'cuda'
 	print(device, 'use')
 	# use loader
+
+	if DPATH == '../data':
+		loader = DataLoader(path=DPATH, img_resize=True)
+	else:
+		loader = DataLoader(path=DPATH)
 	# loader = DataLoader(path=DPATH, test_mode=True)
-	loader = DataLoader(path=DPATH)
+
 	# data set
 	X, y = loader.make_frame(mode='extract', device=device)
 	total_data = myDataset(x=X, y=y)
@@ -43,8 +49,8 @@ def main():
 								   [int(len(total_data) * 0.8), len(total_data) - int(len(total_data) * 0.8)])
 
 	print(type(train))
-	train_loader = data.DataLoader(train, batch_size=2, shuffle=True)
-	val_loader = data.DataLoader(val, batch_size=2, shuffle=True)
+	train_loader = data.DataLoader(train, batch_size=10, shuffle=True)
+	val_loader = data.DataLoader(val, batch_size=10, shuffle=True)
 
 	# set model
 	model = ResLSTM()

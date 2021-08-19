@@ -44,7 +44,7 @@ class DataLoader(object):
                 self.file_dir = [os.path.join(self.path, label) for label in os.listdir(self.path)]
 
                 self.file_list = [[os.path.join(f,file) for file in os.listdir(f)] for f in self.file_dir]
-                print(f'file size: {tuple(len(file) for file in self.file_list)} ex) {self.file_list[0][0]}')
+                print(f'file size: ||{tuple(len(file) for file in self.file_list)} || \nex_path: {self.file_list[0][0]}')
             except FileNotFoundError:
                 print(f'[Errno 2] No such file or directory: {self.path}')
                 self.file_list = None
@@ -54,7 +54,7 @@ class DataLoader(object):
                 self.file_dir = [os.path.join(self.path, label) for label in os.listdir(self.path)]
 
                 self.file_list = [[os.path.join(f, file) for file in os.listdir(f)][:2] for f in self.file_dir]
-                print(f'file size: {tuple(len(file) for file in self.file_list)} ex) {self.file_list[0][0]}')
+                print(f'file size: ||{tuple(len(file) for file in self.file_list)} || \nex_path: {self.file_list[0][0]}')
             except FileNotFoundError:
                 print(f'[Errno 2] No such file or directory: {self.path}')
                 self.file_list = None
@@ -101,7 +101,7 @@ class DataLoader(object):
         """
         :param file_name: filepath + filename
         :param model: pretrained model class which fine tuned
-        :return: feature map for single video :type: [list, torch.Tensor(1d array)]
+        :return: feature map for single video :type: [torch.Tensor[frame(80), feature(300)]]
         """
         filepath = os.path.join(self.path, file_name)
         cap = cv2.VideoCapture(filepath)
@@ -110,16 +110,17 @@ class DataLoader(object):
         while (cap.isOpened()):
             ret, frame = cap.read()
             if ret:
+               # print(type(frame))<class 'numpy.ndarray'>
+                #print(frame.shape) (360, 640, 3)
                 input_data = torch.Tensor(frame.transpose(2, 0, 1)).unsqueeze(0).to('cuda')
+                #input data shpae torch.Size([1, 3, 360, 640])
                 feature = model.forward(input_data)
                 feature = feature.to('cpu')
                 frames.append(feature.detach().numpy())
             else:
                 break
-
         cap.release()
 
-        # frames = torch.stack(frames)
         frames = torch.Tensor(frames).squeeze(1)
         if len(frames) < 80:
             padding = torch.Tensor(np.repeat(np.expand_dims(np.zeros((200)), 0), 80 - len(frames), axis=0))
@@ -128,8 +129,8 @@ class DataLoader(object):
             frames = frames[:80]
 
         if self.verbose:
-            print(f'len frame: {len(frames)} shape {frames[0].shape}')
-        print(f'len frame: {len(frames)} shape {frames[0].shape}')
+            #print(f'len frame: {len(frames)} shape {frames[0].shape}')
+            print(f'single video (frames) shape: {frames.shape}')
         return frames
 
 
@@ -145,12 +146,15 @@ class DataLoader(object):
 
         if mode == 'train':
 
-            total_frame = [[self._video_to_frame(name) for name in fl] for fl in self.file_list]
+            #total_frame = [[self._video_to_frame(name) for name in fl] for fl in self.file_list]
+            total_frame = []
+            for class_file in self.file_list:
+                total_frame.append([self._video_to_frame(name) for name in class_file])
 
             labels = [[[l] for _ in fl] for fl, l in zip(total_frame, self.labels)]
 
             X = torch.stack(list(chain.from_iterable(total_frame)))
-            y = torch.Tensor(list(chain.from_iterable(labels)))
+            y = torch.Tensor(list(chain.from_iterable(labels))).squeeze().long()
 
 
             print(f'video to frame done || total {X.shape}')
@@ -166,7 +170,7 @@ class DataLoader(object):
             resnet_50 = models.resnet50(pretrained=True)
             resnet_50.fc = nn.Linear(resnet_50.fc.in_features, 200)
             resnet_50.to(device)
-            resnet_50.eval()
+            # resnet_50.eval()
             for param in resnet_50.parameters():
                 param.requires_grad_(False)
 
