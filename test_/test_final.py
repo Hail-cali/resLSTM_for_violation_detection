@@ -1,14 +1,12 @@
 #https://github.com/pranoyr/cnn-lstm.git
 # train &  validate setting
 
-
 import pandas as pd
 import numpy as np
 from utils.data_loader import *
 from models.feature_net import *
 import torch.nn as nn
 import torch.optim as optim
-from torchsummary import summary
 import tensorboardX
 from opts import parse_opts
 from torch.utils import data
@@ -49,6 +47,7 @@ def main():
 	# set model
 	model = ResLSTM()
 	device = torch.device(f"cuda:{opt.gpu}" if opt.use_cuda else "cpu")
+	print(device, 'use')
 	model.to(device)
 
 	# USE_CUDA = torch.cuda.is_available()

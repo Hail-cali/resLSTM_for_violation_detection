@@ -4,7 +4,6 @@ from utils.data_loader import *
 from models.feature_net import *
 import torch.nn as nn
 import torch.optim as optim
-from torchsummary import summary
 import tensorboardX
 from opts import parse_opts
 from torch.utils import data
@@ -28,15 +27,16 @@ train, val = data.random_split(total_data, [int(len(total_data)*val_size), len(t
 train_loader = data.DataLoader(train, batch_size=1, shuffle=True)
 val_loader = data.DataLoader(val, batch_size=1, shuffle=True)
 
-model = lLSTM()
+model = ResLSTM()
 
-criterion = nn.BCEWithLogitsLoss()
-optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+#criterion = nn.BCEWithLogitsLoss()
+criterion = nn.CrossEntropyLoss(reduction='sum')
+optimizer = optim.Adam(model.parameters(), lr=0.001)
 
 USE_CUDA = torch.cuda.is_available()
 DEVICE = torch.device("cuda" if USE_CUDA else "cpu")
 
-def train(model, optimizer, train_iter):
+def train(model, optimizer, criterion, train_iter):
     model.train()
     for b, batch in enumerate(train_iter):
         x, y = batch[0].to(DEVICE), batch[1].to(DEVICE)
@@ -70,7 +70,7 @@ def evaluate(model, val_iter):
 best_val_loss = None
 
 for epoch in range(60):
-    train(model, optimizer, train_loader)
+    train(model, optimizer, criterion, train_loader)
     val_loss = evaluate(model, val_loader)
 
     print('[Epoch: %d] val loss : %5.2f ' % (epoch, val_loss))

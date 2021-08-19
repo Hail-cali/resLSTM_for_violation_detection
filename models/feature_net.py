@@ -79,7 +79,7 @@ class ResLSTM(nn.Module):
 
         hidden = None
         out, hidden = self.layer2(x)
-        x = self.fc1(out[-1:, :, :])
+        x = self.fc1(out)
         x = F.relu(x)
         x = self.fc2(x)
         x = F.softmax(x, dim=1)

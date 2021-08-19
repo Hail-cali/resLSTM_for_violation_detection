@@ -88,7 +88,7 @@ class DataLoader(object):
         frames = torch.Tensor(frames).squeeze(1)
 
         # return frames
-        if frames.shpae[0] >= 80:
+        if frames.shape[0] >= 80:
             return frames[:80]
 
         elif frames.shpae[0] < 80:
