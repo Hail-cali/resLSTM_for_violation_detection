@@ -79,7 +79,7 @@ class DataLoader(object):
             ret, frame = cap.read()
             if ret:
                 if self.img_resize:
-                    frame = cv2.resize(frame, dsize=(640, 360), interpolation=cv2.INTER_AREA)
+                    frame = cv2.resize(frame, dsize=(640, 360,3), interpolation=cv2.INTER_AREA)
                 frames.append(frame)
             else:
                 #print(f'{cap}: {frame}')
@@ -134,7 +134,7 @@ class DataLoader(object):
         return frames
 
 
-    def make_frame(self, mode='train', fc_layers=200, device=False,verbose=False):
+    def make_frame(self, mode='train', fc_layers=200, device=False, borad=None, verbose=False):
         """
         :param verbose:
         :param mode: [str] (trian , live)
@@ -146,10 +146,10 @@ class DataLoader(object):
 
         if mode == 'train':
 
-            #total_frame = [[self._video_to_frame(name) for name in fl] for fl in self.file_list]
             total_frame = []
             for class_file in self.file_list:
                 total_frame.append([self._video_to_frame(name) for name in class_file])
+
 
             labels = [[[l] for _ in fl] for fl, l in zip(total_frame, self.labels)]
 
@@ -176,7 +176,7 @@ class DataLoader(object):
 
             total_frame = []
             for class_file in self.file_list:
-                total_frame.append([self.__video_to_frame(name, fc_layers ,model=resnet_50) for name in class_file])
+                total_frame.append([self.__video_to_frame(name, fc_layers, model=resnet_50) for name in class_file])
 
             # labels = [len(fl) * [l] for fl, l in zip(total_frame, self.labels)]
             labels = [[[l]for _ in fl] for fl, l in zip(total_frame, self.labels)]

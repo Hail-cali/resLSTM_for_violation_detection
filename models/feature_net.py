@@ -31,47 +31,50 @@ class FeatureNet(nn.Module):
         layer = models.resnet50(pretrained=True)
         layer.fc = nn.Linear(layer.fc.in_features, 300)
 
-        for param in layer.parameters():
-            param.requires_grad_(False)
+        # for param in layer.parameters():
+        #     param.requires_grad_(False)
 
         return nn.Sequential(layer)
 
     def _forward_impl(self, f):
-
         #f ->  x_3d_list
         hidden = None
-        print(f'f shape {f.shape}')
+        # print(f'f shape {f.shape}')
         x = self.forward_pretrained_layer(f)
-        print(f'x shpae: {x.shape}')
-        out, hidden = self.layer2(x)
-        print(f'in out shape: {out.shape}')
-        #print(f'in out shape: {x.shape}')
-        x = self.fc1(out[:, -1, :])
-        # x
-        # shape: torch.Size([1, 80, 200])
-        # out
-        # shape: torch.Size([1, 80, 100])
+        # print(f'x shpae: {x.shape}')
+        # out, hidden = self.layer2(x)  # shape: torch.Size([1, 80, 100])
+        out, hidden = self.layer2(x.to('cuda'))
+        # print(f'in out shape: {out.shape}')
+        x = self.fc1(out[:, -1, :])   # shape: torch.Size([1, 80, 200])
         x = F.relu(x)
         x = self.fc2(x)
         x = F.softmax(x, dim=1)
+        # print(f'last layer x  shpae : {x.shape}') #last layer x  shpae : torch.Size([20, 2])
         return x
 
     def forward(self, x):
         return self._forward_impl(x)
 
-    def forward_pretrained_layer(self, frames):
-        feature_map = []
-        for frame in frames[0]:
-            # print(type(frame))<class 'numpy.ndarray'>
-            # print(frame.shape) (360, 640, 3)
-            input_data = torch.Tensor(np.array(frame).transpose(2, 0, 1)).unsqueeze(0)
-            # input data shpae torch.Size([1, 3, 360, 640])
-            feature = self.layer1.forward(input_data)
-            feature_map.append(feature.detach().numpy())
+    def forward_pretrained_layer(self, batch_frames):
+        batch_f = []
+        for frames in batch_frames:
+            feature_map = []
+            for frame in frames:
+                # print(type(frame))<class 'numpy.ndarray'>
+                # print(frame.shape) (360, 640, 3)
+                frame = np.array(frame.cpu())
+                input_data = torch.Tensor(frame.transpose(2, 0, 1)).unsqueeze(0).to('cuda')
+                # input data shpae torch.Size([1, 3, 360, 640])
+                feature = self.layer1.forward(input_data)
+                feature = feature.cpu().detach().numpy()
+                # feature_map.append(feature.detach().numpy())
+                feature_map.append(feature)
+            batch_f.append(feature_map)
 
         #return torch.stack(feature_map)
-        return torch.Tensor(feature_map).transpose(1, 0)
-        # return torch.Tensor(feature_map).squeeze(1)
+        #return torch.Tensor(feature_map).transpose(1, 0)
+        print('here')
+        return torch.Tensor(batch_f).squeeze(2)
 
 class ResLSTM(nn.Module):
 
@@ -81,11 +84,12 @@ class ResLSTM(nn.Module):
         self.class_num = class_num
         self.layer2 = self._make_layer()
         self.fc1 = nn.Linear(80, 40)
-        self.fc2 = nn.Linear(20, self.class_num)
+        self.bn = nn.BatchNorm1d(40)
+        self.fc2 = nn.Linear(40, self.class_num)
 
     def _make_layer(self):
         layers = []
-        lstm = nn.LSTM(input_size=200, hidden_size=80,
+        lstm = nn.LSTM(input_size=300, hidden_size=80,
                        batch_first=True)
         layers.append(lstm)
         return nn.Sequential(*layers)
@@ -98,8 +102,10 @@ class ResLSTM(nn.Module):
         #print(f'out shape : {out.shape}')
         x = self.fc1(out[:, -1, :])
         x = F.relu(x)
+        x = self.bn(x)
         x = self.fc2(x)
         x = F.softmax(x, dim=1)
+        #print(f'last layer x  shpae : {x.shape}')
         return x
 
     def forward(self, X):

@@ -13,7 +13,7 @@ from torch.utils import data
 from opts import parse_opts
 from set_train import *
 from set_validate import *
-
+from utils.make_plot import *
 
 
 def resume_model(opt, model, optimizer):
@@ -32,6 +32,10 @@ def main():
 	DPATH = '../data'
 	opt = parse_opts()
 	# device = torch.device(f"cuda:{opt.gpu}" if opt.use_cuda else "cpu")
+
+	# tensorboard
+	summary_writer = tensorboardX.SummaryWriter(log_dir='../tf_logs')
+
 	device = 'cuda'
 	print(device, 'use')
 	# use loader
@@ -43,14 +47,14 @@ def main():
 	# loader = DataLoader(path=DPATH, test_mode=True)
 
 	# data set
-	X, y = loader.make_frame(mode='extract',fc_layers=200, device=device)
+	X, y = loader.make_frame(mode='extract', fc_layers=300, device=device)
 	total_data = myDataset(x=X, y=y)
 	train, val = data.random_split(total_data,
 								   [int(len(total_data) * 0.8), len(total_data) - int(len(total_data) * 0.8)])
 
 	print(type(train))
-	train_loader = data.DataLoader(train, batch_size=20, shuffle=True)
-	val_loader = data.DataLoader(val, batch_size=20, shuffle=True)
+	train_loader = data.DataLoader(train, batch_size=30, shuffle=True)
+	val_loader = data.DataLoader(val, batch_size=30, shuffle=True)
 
 	# set model
 	model = ResLSTM()
@@ -59,8 +63,8 @@ def main():
 	# USE_CUDA = torch.cuda.is_available()
 	# DEVICE = torch.device("cuda" if USE_CUDA else "cpu")
 
-	# tensorboard
-	summary_writer = tensorboardX.SummaryWriter(log_dir='../tf_logs')
+
+
 
 	# optimizer
 	criterion = nn.CrossEntropyLoss()
@@ -72,6 +76,14 @@ def main():
 	else:
 		start_epoch = 1
 	# start training
+
+	train_loss_l = []
+	val_loss_l = []
+	train_acc_l = []
+	val_acc_l = []
+	plot_epoch_l = []
+
+
 	for epoch in range(start_epoch, opt.n_epochs + 1):
 			train_loss, train_acc = train_epoch(
 				model, train_loader, criterion, optimizer, epoch, opt.log_interval, device)
@@ -91,10 +103,22 @@ def main():
 				summary_writer.add_scalar(
 					'acc/val_acc', val_acc * 100, global_step=epoch)
 
+				train_loss_l.append(train_loss)
+				val_loss_l.append(val_loss)
+				train_acc_l.append(train_acc)
+				val_acc_l.append(val_acc)
+				plot_epoch_l.append(epoch)
+
 				state = {'epoch': epoch, 'state_dict': model.state_dict(),
 						 'optimizer_state_dict': optimizer.state_dict()}
 				torch.save(state, os.path.join('../snapshots', f'{opt.model}-Epoch-{epoch}-Loss-{val_loss}.pth'))
 				print("Epoch {} model saved!\n".format(epoch))
 
+	name = f'A_{opt.model}_1'
+	summary_writer.close()
+	loss_plot(train_loss_l, val_loss_l, plot_epoch_l, name)
+	acc_plot(train_acc_l, val_acc_l, plot_epoch_l, name)
+
 if __name__ == "__main__":
 	main()
+
