@@ -28,7 +28,7 @@ def resume_model(opt, model, optimizer):
 
 
 def main():
-	#DPATH = '../dataset'
+	# DPATH = '../dataset'
 	DPATH = '../data'
 	opt = parse_opts()
 	# device = torch.device(f"cuda:{opt.gpu}" if opt.use_cuda else "cpu")
@@ -47,7 +47,7 @@ def main():
 	# loader = DataLoader(path=DPATH, test_mode=True)
 
 	# data set
-	X, y = loader.make_frame(mode='extract', fc_layers=300, device=device)
+	X, y = loader.make_frame(mode='extract', fc_layers=200, device=device)
 	total_data = myDataset(x=X, y=y)
 	train, val = data.random_split(total_data,
 								   [int(len(total_data) * 0.8), len(total_data) - int(len(total_data) * 0.8)])
@@ -114,7 +114,12 @@ def main():
 				torch.save(state, os.path.join('../snapshots', f'{opt.model}-Epoch-{epoch}-Loss-{val_loss}.pth'))
 				print("Epoch {} model saved!\n".format(epoch))
 
-	name = f'A_{opt.model}_1'
+	if DPATH[3:] == 'data':
+		dataset_name = 'SCFD'
+	else:
+		dataset_name = 'Aihub'
+
+	name = f'A_{opt.model}_4_{dataset_name}'
 	summary_writer.close()
 	loss_plot(train_loss_l, val_loss_l, plot_epoch_l, name)
 	acc_plot(train_acc_l, val_acc_l, plot_epoch_l, name)

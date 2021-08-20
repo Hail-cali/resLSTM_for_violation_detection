@@ -73,7 +73,7 @@ class FeatureNet(nn.Module):
 
         #return torch.stack(feature_map)
         #return torch.Tensor(feature_map).transpose(1, 0)
-        print('here')
+       # print('here')
         return torch.Tensor(batch_f).squeeze(2)
 
 class ResLSTM(nn.Module):
@@ -89,7 +89,7 @@ class ResLSTM(nn.Module):
 
     def _make_layer(self):
         layers = []
-        lstm = nn.LSTM(input_size=300, hidden_size=80,
+        lstm = nn.LSTM(input_size=200, hidden_size=80,
                        batch_first=True)
         layers.append(lstm)
         return nn.Sequential(*layers)
@@ -102,7 +102,7 @@ class ResLSTM(nn.Module):
         #print(f'out shape : {out.shape}')
         x = self.fc1(out[:, -1, :])
         x = F.relu(x)
-        x = self.bn(x)
+        #x = self.bn(x)
         x = self.fc2(x)
         x = F.softmax(x, dim=1)
         #print(f'last layer x  shpae : {x.shape}')

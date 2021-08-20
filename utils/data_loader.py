@@ -79,19 +79,19 @@ class DataLoader(object):
             ret, frame = cap.read()
             if ret:
                 if self.img_resize:
-                    frame = cv2.resize(frame, dsize=(640, 360,3), interpolation=cv2.INTER_AREA)
+                    frame = cv2.resize(frame, dsize=(640, 360), interpolation=cv2.INTER_AREA)
                 frames.append(frame)
             else:
                 #print(f'{cap}: {frame}')
                 break
         cap.release()
         frames = torch.Tensor(frames).squeeze(1)
-
+        print(f'single video frame: progressed - shape{frames.shape}')
         # return frames
         if frames.shape[0] >= 80:
             return frames[:80]
 
-        elif frames.shpae[0] < 80:
+        elif frames.shape[0] < 80:
             zero_padding = torch.Tensor([np.zeros(frames[0].shape)]*(80-frames.shape[0]))
             return torch.vstack([frames, zero_padding])
 

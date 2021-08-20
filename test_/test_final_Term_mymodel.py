@@ -29,7 +29,7 @@ def resume_model(opt, model, optimizer):
 
 def main():
     DPATH = '../dataset'
-    #DPATH = '../data'
+    # DPATH = '../data'
     opt = parse_opts()
     opt.model = 'featurenet'
 
@@ -40,13 +40,20 @@ def main():
     if DPATH == '../data':
         loader = DataLoader(path=DPATH, img_resize=True)
     else:
-        loader = DataLoader(path=DPATH, test_mode=True)
+        loader = DataLoader(path=DPATH)
 
     # data set
-    X, y = loader.make_frame(mode='train')
-    total_data = myDataset(x=X, y=y)
-    train, val = data.random_split(total_data,
-                                   [int(len(total_data) * 0.8), len(total_data) - int(len(total_data) * 0.8)])
+    # X, y = loader.make_frame(mode='train')
+    #
+    # total_data = myDataset(x=X, y=y)
+    # train, val = data.random_split(total_data,
+    #                                [int(len(total_data) * 0.8), len(total_data) - int(len(total_data) * 0.8)])
+
+
+
+    train = torch.load('/home/jinyong/work/resLSTM_for_violation_detection/data/processed/train_data.pkl')
+    val = torch.load('/home/jinyong/work/resLSTM_for_violation_detection/data/processed/val_data.pkl')
+
 
     train_loader = data.DataLoader(train, batch_size=20, shuffle=True)
     val_loader = data.DataLoader(val, batch_size=20, shuffle=True)
@@ -108,7 +115,12 @@ def main():
                 torch.save(state, os.path.join('../snapshots', f'{opt.model}-Epoch-{epoch}-Loss-{val_loss}.pth'))
                 print("Epoch {} model saved!\n".format(epoch))
 
-    name = f'B_{opt.model}_1'
+    if DPATH[3:] == 'data':
+        dataset_name = 'SCFD'
+    else:
+        dataset_name = 'Aihub'
+
+    name = f'B_{opt.model}_1_{dataset_name}'
 
     loss_plot(train_loss_l, val_loss_l, plot_epoch_l, name)
     acc_plot(train_acc_l, val_acc_l, plot_epoch_l, name)

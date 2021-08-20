@@ -10,21 +10,22 @@ def loss_plot(train_loss, val_loss, epoch, name):
 
     plt.legend(loc='upper right')
     plt.grid()
+    plt.title(name)
     plt.xlabel('epoch')
     plt.ylabel('loss')
     plt.show()
     plt.savefig(f"../img/{name}_loss.png")
     return
 
-
 def acc_plot(train_acc, val_acc, epoch, name):
-    plt.plot(epoch, val_acc, marker='.', c='red', label="Validation-set Loss")
-    plt.plot(epoch, train_acc, marker='.', c='blue', label="Train-set Loss")
+    plt.plot(epoch, val_acc, marker='.', c='red', label="Validation-set acc")
+    plt.plot(epoch, train_acc, marker='.', c='blue', label="Train-set acc")
 
     plt.legend(loc='upper right')
     plt.grid()
+    plt.title(name)
     plt.xlabel('epoch')
-    plt.ylabel('loss')
+    plt.ylabel('Acc')
     plt.show()
     plt.savefig(f"../img/{name}_acc.png")
     return
