@@ -13,12 +13,10 @@ class FeatureNet(nn.Module):
         super(FeatureNet, self).__init__()
         self.class_num = class_num
         self.batch_size = batch
-
         self.layer1 = self._make_pretrained_layer()
         self.layer2 = self._make_layer()
         self.fc1 = nn.Linear(256, 80)
         self.fc2 = nn.Linear(80, self.class_num)
-
 
     def _make_layer(self):
         layers = []
@@ -30,21 +28,15 @@ class FeatureNet(nn.Module):
 
         layer = models.resnet50(pretrained=True)
         layer.fc = nn.Linear(layer.fc.in_features, 300)
-
         # for param in layer.parameters():
         #     param.requires_grad_(False)
-
         return nn.Sequential(layer)
 
     def _forward_impl(self, f):
-        #f ->  x_3d_list
         hidden = None
-        # print(f'f shape {f.shape}')
         x = self.forward_pretrained_layer(f)
-        # print(f'x shpae: {x.shape}')
         # out, hidden = self.layer2(x)  # shape: torch.Size([1, 80, 100])
         out, hidden = self.layer2(x.to('cuda'))
-        # print(f'in out shape: {out.shape}')
         x = self.fc1(out[:, -1, :])   # shape: torch.Size([1, 80, 200])
         x = F.relu(x)
         x = self.fc2(x)
@@ -80,7 +72,6 @@ class ResLSTM(nn.Module):
 
     def __init__(self, class_num=2):
         super(ResLSTM, self).__init__()
-
         self.class_num = class_num
         self.layer2 = self._make_layer()
         self.fc1 = nn.Linear(80, 40)
@@ -95,17 +86,13 @@ class ResLSTM(nn.Module):
         return nn.Sequential(*layers)
 
     def _forward_impl(self, x):
-
         hidden = None
-        #print(f'x shape : {x.shape}')
         out, hidden = self.layer2(x)
-        #print(f'out shape : {out.shape}')
         x = self.fc1(out[:, -1, :])
         x = F.relu(x)
         #x = self.bn(x)
         x = self.fc2(x)
         x = F.softmax(x, dim=1)
-        #print(f'last layer x  shpae : {x.shape}')
         return x
 
     def forward(self, X):
