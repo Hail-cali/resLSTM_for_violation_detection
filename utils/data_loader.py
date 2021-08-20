@@ -53,7 +53,7 @@ class DataLoader(object):
             try:
                 self.file_dir = [os.path.join(self.path, label) for label in os.listdir(self.path)]
 
-                self.file_list = [[os.path.join(f, file) for file in os.listdir(f)][:4] for f in self.file_dir]
+                self.file_list = [[os.path.join(f, file) for file in os.listdir(f)][:10] for f in self.file_dir]
                 print(f'file size: ||{tuple(len(file) for file in self.file_list)} || \nex_path: {self.file_list[0][0]}')
             except FileNotFoundError:
                 print(f'[Errno 2] No such file or directory: {self.path}')

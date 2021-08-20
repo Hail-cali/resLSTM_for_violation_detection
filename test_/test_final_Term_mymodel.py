@@ -40,19 +40,19 @@ def main():
     if DPATH == '../data':
         loader = DataLoader(path=DPATH, img_resize=True)
     else:
-        loader = DataLoader(path=DPATH)
+        loader = DataLoader(path=DPATH, test_mode=True)
 
     # data set
-    # X, y = loader.make_frame(mode='train')
+    X, y = loader.make_frame(mode='train')
+
+    total_data = myDataset(x=X, y=y)
+    train, val = data.random_split(total_data,
+                                   [int(len(total_data) * 0.8), len(total_data) - int(len(total_data) * 0.8)])
+
+
     #
-    # total_data = myDataset(x=X, y=y)
-    # train, val = data.random_split(total_data,
-    #                                [int(len(total_data) * 0.8), len(total_data) - int(len(total_data) * 0.8)])
-
-
-
-    train = torch.load('/home/jinyong/work/resLSTM_for_violation_detection/data/processed/train_data.pkl')
-    val = torch.load('/home/jinyong/work/resLSTM_for_violation_detection/data/processed/val_data.pkl')
+    # train = torch.load('/home/jinyong/work/resLSTM_for_violation_detection/data/processed/train_data.pkl')
+    # val = torch.load('/home/jinyong/work/resLSTM_for_violation_detection/data/processed/val_data.pkl')
 
 
     train_loader = data.DataLoader(train, batch_size=20, shuffle=True)
