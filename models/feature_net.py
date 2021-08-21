@@ -1,11 +1,10 @@
 import torch
 import torch.nn as nn
 import torchvision.models as models
-from torch.nn.utils.rnn import pack_padded_sequence
 import torch.nn.functional as F
 import numpy as np
 
-torch.no_grad()
+#torch.no_grad()
 
 class FeatureNet(nn.Module):
 
@@ -35,13 +34,11 @@ class FeatureNet(nn.Module):
     def _forward_impl(self, f):
         hidden = None
         x = self.forward_pretrained_layer(f)
-        # out, hidden = self.layer2(x)  # shape: torch.Size([1, 80, 100])
         out, hidden = self.layer2(x.to('cuda'))
         x = self.fc1(out[:, -1, :])   # shape: torch.Size([1, 80, 200])
         x = F.relu(x)
         x = self.fc2(x)
         x = F.softmax(x, dim=1)
-        # print(f'last layer x  shpae : {x.shape}') #last layer x  shpae : torch.Size([20, 2])
         return x
 
     def forward(self, x):
@@ -59,13 +56,10 @@ class FeatureNet(nn.Module):
                 # input data shpae torch.Size([1, 3, 360, 640])
                 feature = self.layer1.forward(input_data)
                 feature = feature.cpu().detach().numpy()
-                # feature_map.append(feature.detach().numpy())
+
                 feature_map.append(feature)
             batch_f.append(feature_map)
 
-        #return torch.stack(feature_map)
-        #return torch.Tensor(feature_map).transpose(1, 0)
-       # print('here')
         return torch.Tensor(batch_f).squeeze(2)
 
 class ResLSTM(nn.Module):
@@ -97,22 +91,4 @@ class ResLSTM(nn.Module):
 
     def forward(self, X):
         return self._forward_impl(X)
-
-
-class lLSTM(nn.Module):
-    """
-    #
-    """
-    def __init__(self):
-        super(lLSTM, self).__init__()
-        self.lstm = nn.LSTM(input_size=200,
-                            hidden_size=80,
-                            bidirectional=True,
-                            batch_first=True)
-        self.fc = nn.Linear(160, 1)
-
-    def forward(self, X):
-        outputs, _ = self.lstm(X)
-        outputs = outputs[:, -1, :]
-        return self.fc(outputs)
 
