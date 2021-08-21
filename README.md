@@ -1,6 +1,9 @@
 # resLSTM_for_violation_detection
 <hr />
 
+>### CCTV video violation detection using *CNN-LSTM*
+> with @`codenavy94` @`jinyong` @`bestsilver`
+
 |main | contents |
 |---|:---:|
 | `for` | 21 summer semester  deep learning  co-project |
@@ -8,7 +11,6 @@
 | `role` |`modeling ` |
 | `model` | `ResNet & LSTM `  |
 
->### CCTV video violation detection using *CNN-LSTM*
 
 + ### dataset 
 
@@ -25,7 +27,7 @@
 
 >code descrition
 > - **model** => `featurenet.py` 
-> - **utils** => `data_loader.py` |ideo to frame torch Tensor & load dataset from dir)
+> - **utils** => `data_loader.py` |video to frame torch Tensor & load dataset from dir)
 > - ***test_*** => `test_A.py` | using resnet for feature extraction without backprop
 > - ***test_*** => `test_B.py` | piled up layer (resnet & lstm) for backprop
 > - **dataset**
