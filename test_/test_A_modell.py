@@ -41,7 +41,7 @@ def main():
 	# use loader
 
 	if DPATH == '../data':
-		loader = DataLoader(path=DPATH, img_resize=True)
+		loader = DataLoader(path=DPATH, img_resize=True, cv_gpu=True)
 	else:
 		loader = DataLoader(path=DPATH)
 	# loader = DataLoader(path=DPATH, test_mode=True)

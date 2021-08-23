@@ -2,13 +2,13 @@
 <hr />
 
 >### CCTV video violation detection using *CNN-LSTM*
-> with @`codenavy94` @`jinyong` @`bestsilver`
+
 
 |main | contents |
 |---|:---:|
-| `for` | 21 summer semester  deep learning  co-project |
+| `for` | 21 summer semester  deep learning project |
 | `period` | 21.08.14-21.08.20 |
-| `role` |`modeling ` |
+| `role` |`modeling` & `training` |
 | `model` | `ResNet & LSTM `  |
 
 

@@ -26,7 +26,7 @@ class myDataset(data.Dataset):
 class DataLoader(object):
 
     def __init__(self, path=None, labels=[1, 0], test_mode=False, batch_size=64, mode='train',
-                 img_resize=False, test_size=0.3, shuffle=True,
+                 img_resize=False, test_size=0.3, shuffle=True, cv_gpu=False,
                  verbose=False):
         self.path = path
         self.labels = labels
@@ -34,10 +34,10 @@ class DataLoader(object):
         self.mode = mode
         self.verbose = verbose
         self.img_resize = img_resize
-
         self.test_size = test_size
         self.shuffle = shuffle
         self.test_mode = test_mode
+        self.cv_gpu = cv_gpu
 
         if not self.test_mode:
             try:
@@ -73,7 +73,11 @@ class DataLoader(object):
         :return: frame for single video :type: [torch.Tensor] :shape: [80, 360, 640, 3]
         """
         filepath = os.path.join(self.path, file_name)
-        cap = cv2.VideoCapture(filepath)
+        if self.cv_gpu:
+            cap = cv2.VideoCapture(filepath, cv2.CAP_INTEL_MFX)
+        else:
+            cap = cv2.VideoCapture(filepath)
+
         frames = []
         while cap.isOpened():
             ret, frame = cap.read()

@@ -28,8 +28,8 @@ def resume_model(opt, model, optimizer):
 
 
 def main():
-    DPATH = '../dataset'
-    # DPATH = '../data'
+    # DPATH = '../dataset'
+    DPATH = '../data'
     opt = parse_opts()
     opt.model = 'featurenet'
 
