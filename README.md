@@ -17,7 +17,7 @@
 ![dataset preview](/img_result/img/scfd_fight.png "Aihub CCTV Fight")
   
 + ### method 
-
+<img width="500" src="/img_result/img/featurenet_method.png" alt="result" title="Featurenet method">,
 >> 
 
 + ### result
